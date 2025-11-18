@@ -6,9 +6,11 @@ translator = pipeline("translation", model="Helsinki-NLP/opus-mt-mul-en")
 
 def translate_to_english(text):
     try:
-        if detect(text) != 'en':
+        lang = detect(text)
+        if lang != 'en':
             translated = translator(text[:512])[0]['translation_text']
             return translated
         return text
     except Exception as e:
-        return f"Translation error: {str(e)}"
+        # Raise exception instead of returning error string
+        raise Exception(f"Translation failed: {str(e)}")

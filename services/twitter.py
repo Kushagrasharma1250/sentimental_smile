@@ -3,7 +3,7 @@ import requests
 from urllib.parse import urlparse
 from ml.text_sentiment import run_text_sentiment
 
-TWITTER_BEARER_TOKEN = os.environ.get("AAAAAAAAAAAAAAAAAAAAAOj75QEAAAAAspFfxZAWgs1mANKFafQX8BJ%2FelY%3DPdV1lc4dafTTQd7311RuMLHcv4nJCRSLdwf2bPt52BKrdUfiAi")
+TWITTER_BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAOj75QEAAAAAspFfxZAWgs1mANKFafQX8BJ%2FelY%3DPdV1lc4dafTTQd7311RuMLHcv4nJCRSLdwf2bPt52BKrdUfiAi"
 
 def extract_tweet_id(url):
     try:
@@ -27,13 +27,16 @@ def fetch_tweet_text(tweet_id):
     return None
 
 def analyze_twitter(url):
-    tweet_id = extract_tweet_id(url)
-    if not tweet_id:
-        return "Invalid Twitter link"
+    try:
+        tweet_id = extract_tweet_id(url)
+        if not tweet_id:
+            return "Invalid Twitter link"
 
-    text = fetch_tweet_text(tweet_id)
-    if not text:
-        return "Unable to fetch tweet"
+        text = fetch_tweet_text(tweet_id)
+        if not text:
+            return "Unable to fetch tweet"
 
-    sentiment = run_text_sentiment(text)
-    return f"Tweet Sentiment: {sentiment}"
+        sentiment = run_text_sentiment(text)
+        return f"Tweet Sentiment: {sentiment}"
+    except Exception as e:
+        return f"Error analyzing tweet: {str(e)}"

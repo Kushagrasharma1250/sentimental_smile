@@ -3,22 +3,212 @@
 <head>
   <title>Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .nav-tabs .nav-link.active { background-color: #e9ecef; border-bottom: 3px solid #0d6efd; }
+    .chart-container { position: relative; width: 300px; height: 300px; margin: auto; margin-top: 20px; }
+    .sentiment-result { margin-top: 30px; }
+    .result-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-top: 20px; }
+    .result-card h5 { margin-bottom: 15px; }
+    .sentiment-badge { display: inline-block; padding: 8px 15px; border-radius: 20px; font-weight: bold; margin: 5px; }
+    .positive { background-color: #28a745; }
+    .negative { background-color: #dc3545; }
+    .neutral { background-color: #ffc107; color: black; }
+  </style>
 </head>
 <body class="container mt-5">
   <h2>Sentiment Analysis Dashboard</h2>
+  <p class="text-muted">Analyze sentiment from different social media platforms</p>
 
-  <form method="POST" action="/analyze">
-    <input type="text" name="link" class="form-control mb-2" placeholder="Paste YouTube, Twitter, Instagram, or video link" required>
-    <button type="submit" class="btn btn-info">Analyze</button>
-  </form>
+  <!-- Platform Tabs -->
+  <ul class="nav nav-tabs mb-4" id="platformTabs">
+    <li class="nav-item">
+      <button class="nav-link active" id="youtube-tab" onclick="switchTab('youtube')">YouTube</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="twitter-tab" onclick="switchTab('twitter')">Twitter</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="instagram-tab" onclick="switchTab('instagram')">Instagram</button>
+    </li>
+  </ul>
 
+  <!-- YouTube Analysis -->
+  <div id="youtube" class="tab-content active">
+    <h4>YouTube Sentiment Analysis</h4>
+    <form method="POST" action="/analyze/youtube" id="youtubeForm">
+      <div class="mb-3">
+        <label class="form-label">YouTube Video URL:</label>
+        <input type="text" name="link" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Analysis Type:</label>
+        <select name="analysis_type" class="form-control">
+          <option value="both">Both (Video & Comments)</option>
+          <option value="video">Video Content Only</option>
+          <option value="comments">Comments Only</option>
+        </select>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Analyze YouTube</button>
+    </form>
+  </div>
+
+  <!-- Twitter Analysis -->
+  <div id="twitter" class="tab-content">
+    <h4>Twitter Sentiment Analysis</h4>
+    <form method="POST" action="/analyze/twitter" id="twitterForm">
+      <div class="mb-3">
+        <label class="form-label">Tweet URL:</label>
+        <input type="text" name="link" class="form-control" placeholder="https://twitter.com/..." required>
+      </div>
+      
+      <button type="submit" class="btn btn-info">Analyze Tweet</button>
+    </form>
+  </div>
+
+  <!-- Instagram Analysis -->
+  <div id="instagram" class="tab-content">
+    <h4>Instagram Sentiment Analysis</h4>
+    <form method="POST" action="/analyze/instagram" id="instagramForm">
+      <div class="mb-3">
+        <label class="form-label">Instagram Post URL:</label>
+        <input type="text" name="link" class="form-control" placeholder="https://www.instagram.com/p/... or /reel/..." required>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Analysis Type:</label>
+        <select name="analysis_type" class="form-control">
+          <option value="caption">Caption Analysis</option>
+          <option value="image">Image Caption Only</option>
+          <option value="reel">Reel Caption Only</option>
+          <option value="comments">Comments Sentiment</option>
+        </select>
+        <small class="form-text text-muted">Choose what to analyze: caption text or post comments</small>
+      </div>
+      
+      <button type="submit" class="btn btn-danger">Analyze Instagram</button>
+    </form>
+  </div>
+
+  <!-- Sentiment Result with Pie Chart -->
   {% if sentiment %}
-    <div class="alert alert-info mt-4">
-      <h5>Sentiment Result</h5>
-      <p>{{ sentiment }}</p>
+    <div class="sentiment-result">
+      <div class="result-card">
+        <h5>📊 Sentiment Analysis Result</h5>
+        <div class="chart-container">
+          <canvas id="sentimentChart"></canvas>
+        </div>
+        <div id="sentimentDetails"></div>
+      </div>
     </div>
   {% endif %}
 
-  <p class="mt-3"><a href="/logout">Logout</a></p>
+  <hr class="my-4">
+  <p><a href="/logout" class="btn btn-secondary">Logout</a></p>
+
+  <script>
+    function switchTab(tabName) {
+      // Hide all tabs
+      const tabs = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => tab.classList.remove('active'));
+
+      // Remove active class from all buttons
+      const buttons = document.querySelectorAll('.nav-link');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      // Show selected tab
+      document.getElementById(tabName).classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+    }
+
+    // Parse sentiment data and create pie chart
+    function createSentimentChart(sentimentText) {
+      // Extract label and score from sentiment text
+      // Expected format: "POSITIVE (85.50%)" or "NEGATIVE (60.00%)"
+      const match = sentimentText.match(/(\w+)\s*\((\d+\.?\d*)\%?\)/);
+      
+      if (!match) {
+        // If regex doesn't match, show raw text
+        const detailsDiv = document.getElementById('sentimentDetails');
+        detailsDiv.innerHTML = `<p style="margin-top: 15px; color: white;"><strong>Result:</strong> ${sentimentText}</p>`;
+        return;
+      }
+      
+      const label = match[1];
+      const score = parseFloat(match[2]);
+      
+      // Create pie chart data
+      const chartContainer = document.getElementById('sentimentChart');
+      if (!chartContainer) return;
+
+      const ctx = chartContainer.getContext('2d');
+      
+      // Define colors based on sentiment
+      let colors = [];
+      let labels = [];
+      let data = [];
+      
+      if (label === 'POSITIVE') {
+        colors = ['#28a745', '#e9ecef'];
+        labels = ['Positive', 'Other'];
+        data = [score, 100 - score];
+      } else if (label === 'NEGATIVE') {
+        colors = ['#dc3545', '#e9ecef'];
+        labels = ['Negative', 'Other'];
+        data = [score, 100 - score];
+      } else {
+        colors = ['#ffc107', '#e9ecef'];
+        labels = ['Neutral', 'Other'];
+        data = [score, 100 - score];
+      }
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderColor: ['white', 'white'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'white',
+                font: { size: 14 }
+              }
+            }
+          }
+        }
+      });
+
+      // Display sentiment details
+      const detailsDiv = document.getElementById('sentimentDetails');
+      const badgeClass = label === 'POSITIVE' ? 'positive' : label === 'NEGATIVE' ? 'negative' : 'neutral';
+      detailsDiv.innerHTML = `<p style="margin-top: 15px;">Sentiment: <span class="sentiment-badge ${badgeClass}">${label} (${score}%)</span></p>`;
+    }
+
+    // Initialize chart on page load if sentiment exists
+    window.addEventListener('load', function() {
+      const detailsDiv = document.getElementById('sentimentDetails');
+      if (detailsDiv && detailsDiv.innerHTML === '') {
+        // Extract sentiment from the page content
+        const sentimentText = '{{ sentiment }}';
+        if (sentimentText) {
+          createSentimentChart(sentimentText);
+        }
+      }
+    });
+  </script>
 </body>
 </html>
