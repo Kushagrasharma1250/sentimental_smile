@@ -81,9 +81,31 @@ def run_image_sentiment(image_source):
         
         result = sentiment_pipeline(caption)[0]
         label = result['label'].upper()
-        score = round(result['score'] * 100, 2)
-        
+        # Normalize score to percent and cap at 100 to avoid anomalous values
+        raw = result.get('score', 0)
+        score = _to_percent(raw)
+
         return f"{label} ({score}%)"
     except Exception as e:
         import traceback
         return f"Error analyzing image sentiment: {str(e)}"
+
+
+def _to_percent(raw_score):
+    try:
+        val = float(raw_score)
+    except Exception:
+        return 0.0
+
+    if val <= 1.0:
+        percent = round(val * 100.0, 2)
+    elif val <= 100.0:
+        percent = round(val, 2)
+    else:
+        percent = 100.0
+
+    if percent < 0:
+        percent = 0.0
+    if percent > 100.0:
+        percent = 100.0
+    return percent

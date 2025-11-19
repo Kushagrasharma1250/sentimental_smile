@@ -1,14 +1,24 @@
 from transformers import pipeline
 from langdetect import detect
 
-# Load multilingual-to-English translation model
-translator = pipeline("translation", model="Helsinki-NLP/opus-mt-mul-en")
+# Lazy-load translator to avoid startup delays and errors
+translator = None
+
+def _get_translator():
+    global translator
+    if translator is None:
+        try:
+            translator = pipeline("translation", model="Helsinki-NLP/opus-mt-mul-en")
+        except Exception as e:
+            raise Exception(f"Failed to load translation model: {str(e)}")
+    return translator
 
 def translate_to_english(text):
     try:
         lang = detect(text)
         if lang != 'en':
-            translated = translator(text[:512])[0]['translation_text']
+            trans = _get_translator()
+            translated = trans(text[:512])[0]['translation_text']
             return translated
         return text
     except Exception as e:
