@@ -5,17 +5,310 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .nav-tabs .nav-link.active { background-color: #e9ecef; border-bottom: 3px solid #0d6efd; }
-    .chart-container { position: relative; width: 300px; height: 300px; margin: auto; margin-top: 20px; }
-    .sentiment-result { margin-top: 30px; }
-    .result-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-top: 20px; }
-    .result-card h5 { margin-bottom: 15px; }
-    .sentiment-badge { display: inline-block; padding: 8px 15px; border-radius: 20px; font-weight: bold; margin: 5px; }
-    .positive { background-color: #28a745; }
-    .negative { background-color: #dc3545; }
-    .neutral { background-color: #ffc107; color: black; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+    
+    h2 {
+      font-weight: 900;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient 3s linear infinite;
+      text-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+    }
+    
+    @keyframes gradient {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+    
+    .text-muted {
+      color: #00ffff !important;
+      text-align: center;
+      font-size: 1.1rem;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    
+    .nav-tabs {
+      border-bottom: 2px solid rgba(255, 0, 255, 0.3);
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    
+    .nav-tabs .nav-link {
+      background: rgba(20, 20, 40, 0.6);
+      border: 2px solid rgba(255, 0, 255, 0.3);
+      color: #ff00ff;
+      margin: 0 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .nav-tabs .nav-link:hover {
+      background: rgba(255, 0, 255, 0.2);
+      border-color: #ff00ff;
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .nav-tabs .nav-link.active {
+      background: linear-gradient(135deg, #ff00ff, #ff0080);
+      border-color: #ff00ff;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(255, 0, 255, 0.4);
+      border-bottom: 3px solid #00ffff;
+    }
+    
+    .tab-content {
+      display: none;
+      background: rgba(20, 20, 40, 0.7);
+      padding: 30px;
+      border-radius: 20px;
+      border: 2px solid rgba(255, 0, 255, 0.3);
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    h4 {
+      color: #00ffff;
+      font-weight: 700;
+      margin-bottom: 25px;
+      text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+    
+    .form-label {
+      color: #ff00ff;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+      margin-bottom: 10px;
+    }
+    
+    .form-control, .form-select {
+      background: rgba(10, 10, 30, 0.8);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      background: rgba(10, 10, 30, 0.9);
+      border-color: #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      color: #fff;
+      outline: none;
+    }
+    
+    .form-control::placeholder {
+      color: rgba(0, 255, 255, 0.5);
+    }
+    
+    .btn {
+      font-weight: 700;
+      padding: 12px 30px;
+      border-radius: 25px;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #ff0080, #ff00ff);
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .btn-info {
+      background: linear-gradient(135deg, #00ffff, #0080ff);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+    
+    .btn-info:hover {
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ff0080, #ff0040);
+      box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+    }
+    
+    .btn-danger:hover {
+      box-shadow: 0 0 40px rgba(255, 0, 128, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #666, #999);
+      box-shadow: 0 0 20px rgba(153, 153, 153, 0.5);
+    }
+    
+    .btn-secondary:hover {
+      box-shadow: 0 0 40px rgba(153, 153, 153, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .chart-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: auto;
+      margin-top: 20px;
+    }
+    
+    .sentiment-result {
+      margin-top: 30px;
+      animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .result-card {
+      background: linear-gradient(135deg, rgba(255, 0, 255, 0.3), rgba(0, 255, 255, 0.3));
+      border: 2px solid rgba(255, 0, 255, 0.5);
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin-top: 20px;
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.4), 0 0 80px rgba(0, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+    
+    .result-card h5 {
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      text-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+    }
+    
+    .sentiment-badge {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      margin: 5px;
+      box-shadow: 0 0 20px currentColor;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .positive {
+      background: linear-gradient(135deg, #00ff00, #00cc00);
+      color: #000;
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    }
+    
+    .negative {
+      background: linear-gradient(135deg, #ff0040, #ff0080);
+      color: white;
+      box-shadow: 0 0 30px rgba(255, 0, 64, 0.6);
+    }
+    
+    .neutral {
+      background: linear-gradient(135deg, #ffff00, #ffcc00);
+      color: black;
+      box-shadow: 0 0 30px rgba(255, 255, 0, 0.6);
+    }
+    
+    .form-text {
+      color: rgba(0, 255, 255, 0.7) !important;
+      text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+    }
+    
+    hr {
+      border-color: rgba(255, 0, 255, 0.3);
+      margin: 40px 0;
+    }
+    
+    select.form-control {
+      background: rgba(10, 10, 30, 0.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E") no-repeat right 12px center;
+      appearance: none;
+    }
   </style>
 </head>
 <body class="container mt-5">
@@ -35,25 +328,16 @@
     </li>
   </ul>
 
-  <!-- YouTube Analysis -->
+  <!-- YouTube Comments Analysis -->
   <div id="youtube" class="tab-content active">
-    <h4>YouTube Sentiment Analysis</h4>
+    <h4>YouTube Comments Sentiment</h4>
     <form method="POST" action="/analyze/youtube" id="youtubeForm">
       <div class="mb-3">
-        <label class="form-label">YouTube Video URL:</label>
+        <label class="form-label">YouTube URL:</label>
         <input type="text" name="link" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
       </div>
       
-      <div class="mb-3">
-        <label class="form-label">Analysis Type:</label>
-        <select name="analysis_type" class="form-control">
-          <option value="both">Both (Video & Comments)</option>
-          <option value="video">Video Content Only</option>
-          <option value="comments">Comments Only</option>
-        </select>
-      </div>
-      
-      <button type="submit" class="btn btn-primary">Analyze YouTube</button>
+      <button type="submit" class="btn btn-primary">Analyze Comments</button>
     </form>
   </div>
 
@@ -70,27 +354,16 @@
     </form>
   </div>
 
-  <!-- Instagram Analysis -->
+  <!-- Instagram Comments Analysis -->
   <div id="instagram" class="tab-content">
-    <h4>Instagram Sentiment Analysis</h4>
+    <h4>Instagram Comments Sentiment</h4>
     <form method="POST" action="/analyze/instagram" id="instagramForm">
       <div class="mb-3">
         <label class="form-label">Instagram Post URL:</label>
-        <input type="text" name="link" class="form-control" placeholder="https://www.instagram.com/p/... or /reel/..." required>
+        <input type="text" name="link" class="form-control" placeholder="https://www.instagram.com/p/..." required>
       </div>
       
-      <div class="mb-3">
-        <label class="form-label">Analysis Type:</label>
-        <select name="analysis_type" class="form-control">
-          <option value="caption">Caption Analysis</option>
-          <option value="image">Image Caption Only</option>
-          <option value="reel">Reel Caption Only</option>
-          <option value="comments">Comments Sentiment</option>
-        </select>
-        <small class="form-text text-muted">Choose what to analyze: caption text or post comments</small>
-      </div>
-      
-      <button type="submit" class="btn btn-danger">Analyze Instagram</button>
+      <button type="submit" class="btn btn-danger">Analyze Comments</button>
     </form>
   </div>
 
@@ -108,31 +381,24 @@
   {% endif %}
 
   <hr class="my-4">
-  <p><a href="/logout" class="btn btn-secondary">Logout</a></p>
+  <p style="text-align: center;"><a href="/logout" class="btn btn-secondary">Logout</a></p>
 
   <script>
     function switchTab(tabName) {
-      // Hide all tabs
       const tabs = document.querySelectorAll('.tab-content');
       tabs.forEach(tab => tab.classList.remove('active'));
 
-      // Remove active class from all buttons
       const buttons = document.querySelectorAll('.nav-link');
       buttons.forEach(btn => btn.classList.remove('active'));
 
-      // Show selected tab
       document.getElementById(tabName).classList.add('active');
       document.getElementById(tabName + '-tab').classList.add('active');
     }
 
-    // Parse sentiment data and create pie chart
     function createSentimentChart(sentimentText) {
-      // Extract label and score from sentiment text
-      // Expected format: "POSITIVE (85.50%)" or "NEGATIVE (60.00%)"
       const match = sentimentText.match(/(\w+)\s*\((\d+\.?\d*)\%?\)/);
       
       if (!match) {
-        // If regex doesn't match, show raw text
         const detailsDiv = document.getElementById('sentimentDetails');
         detailsDiv.innerHTML = `<p style="margin-top: 15px; color: white;"><strong>Result:</strong> ${sentimentText}</p>`;
         return;
@@ -141,27 +407,25 @@
       const label = match[1];
       const score = parseFloat(match[2]);
       
-      // Create pie chart data
       const chartContainer = document.getElementById('sentimentChart');
       if (!chartContainer) return;
 
       const ctx = chartContainer.getContext('2d');
       
-      // Define colors based on sentiment
       let colors = [];
       let labels = [];
       let data = [];
       
       if (label === 'POSITIVE') {
-        colors = ['#28a745', '#e9ecef'];
+        colors = ['#00ff00', 'rgba(255, 255, 255, 0.1)'];
         labels = ['Positive', 'Other'];
         data = [score, 100 - score];
       } else if (label === 'NEGATIVE') {
-        colors = ['#dc3545', '#e9ecef'];
+        colors = ['#ff0040', 'rgba(255, 255, 255, 0.1)'];
         labels = ['Negative', 'Other'];
         data = [score, 100 - score];
       } else {
-        colors = ['#ffc107', '#e9ecef'];
+        colors = ['#ffff00', 'rgba(255, 255, 255, 0.1)'];
         labels = ['Neutral', 'Other'];
         data = [score, 100 - score];
       }
@@ -173,7 +437,7 @@
           datasets: [{
             data: data,
             backgroundColor: colors,
-            borderColor: ['white', 'white'],
+            borderColor: ['rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.2)'],
             borderWidth: 2
           }]
         },
@@ -185,24 +449,21 @@
               position: 'bottom',
               labels: {
                 color: 'white',
-                font: { size: 14 }
+                font: { size: 14, family: "'Orbitron', sans-serif" }
               }
             }
           }
         }
       });
 
-      // Display sentiment details
       const detailsDiv = document.getElementById('sentimentDetails');
       const badgeClass = label === 'POSITIVE' ? 'positive' : label === 'NEGATIVE' ? 'negative' : 'neutral';
       detailsDiv.innerHTML = `<p style="margin-top: 15px;">Sentiment: <span class="sentiment-badge ${badgeClass}">${label} (${score}%)</span></p>`;
     }
 
-    // Initialize chart on page load if sentiment exists
     window.addEventListener('load', function() {
       const detailsDiv = document.getElementById('sentimentDetails');
       if (detailsDiv && detailsDiv.innerHTML === '') {
-        // Extract sentiment from the page content
         const sentimentText = '{{ sentiment }}';
         if (sentimentText) {
           createSentimentChart(sentimentText);

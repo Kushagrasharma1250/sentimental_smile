@@ -45,13 +45,13 @@
 - ✅ Blueprint: `analyze_bp`
 - ✅ Routes:
   - `'/dashboard'` → `dashboard()` - Shows dashboard
-  - `'/analyze/youtube'` → `analyze_youtube_route()` - YouTube analysis
+  - `'/analyze/youtube'` → `analyze_youtube_route()` - YouTube comments analysis
   - `'/analyze/twitter'` → `analyze_twitter_route()` - Twitter analysis
-  - `'/analyze/instagram'` → `analyze_instagram_route()` - Instagram analysis
+  - `'/analyze/instagram'` → `analyze_instagram_route()` - Instagram comments analysis
 - ✅ Imports:
-  - YouTube: `analyze_youtube`, `analyze_youtube_video`, `analyze_youtube_comments`
+  - YouTube: `analyze_youtube_comments`
   - Twitter: `analyze_twitter`
-  - Instagram: `analyze_instagram`, `analyze_instagram_image`, `analyze_instagram_reel`, `analyze_instagram_comments`
+  - Instagram: `analyze_instagram_comments`
 - ✅ Template: Uses `dashboard.html`
 
 ---
@@ -60,11 +60,8 @@
 **File**: `services/youtube.py`
 - ✅ Functions:
   - `extract_video_id(url)` - Extracts video ID from URL
-  - `fetch_transcript(video_id)` - Fetches video transcript
   - `fetch_top_comments(video_id)` - Fetches top comments
-  - `analyze_youtube_video(url)` - Analyzes video content
   - `analyze_youtube_comments(url)` - Analyzes comments
-  - `analyze_youtube(url, analysis_type)` - Main analysis function
 - ✅ Imports: `run_text_sentiment` from `ml.text_sentiment`
 - ✅ Used by: `routes/analyze.py`
 
@@ -85,13 +82,8 @@
 **File**: `services/instagram.py`
 - ✅ Functions:
   - `extract_shortcode(url)` - Extracts post shortcode
-  - `detect_content_type(url)` - Detects image/reel/story
-  - `fetch_caption(shortcode)` - Fetches post caption
   - `fetch_comments(shortcode)` - Fetches post comments
-  - `analyze_instagram_image(url)` - Analyzes image caption
-  - `analyze_instagram_reel(url)` - Analyzes reel caption
   - `analyze_instagram_comments(url)` - Analyzes comments
-  - `analyze_instagram(url, analysis_type)` - Main analysis function
 - ✅ Imports: `run_text_sentiment` from `ml.text_sentiment`
 - ✅ Used by: `routes/analyze.py`
 
