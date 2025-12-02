@@ -407,51 +407,66 @@
       document.getElementById(tabName + '-tab').classList.add('active');
     }
 
-    // Parse sentiment data and create pie chart
+    // Parse sentiment data and create pie chart with three slices: Neutral, Positive, Negative
     function createSentimentChart(sentimentText) {
       const chartContainer = document.getElementById('sentimentChart');
       if (!chartContainer) return;
 
-      let positive = 0.0, negative = 0.0, neutral = 100.0;
-      const match = sentimentText.match(/(\w+)\s*\((\d+\.?\d*)\%\)/);
+      // Default values: all neutral
+      let positive = 0.0;
+      let negative = 0.0;
+      let neutral = 100.0;
 
+      // Try to extract label and score from text like "POSITIVE (85.50%)"
+      const match = sentimentText.match(/(\b[A-Z]+\b)\s*\((\d+\.?\d*)\%?\)/i);
       if (match) {
         const label = match[1].toUpperCase();
-        const score = parseFloat(match[2]);
-        const remainder = 100 - score;
+        const score = parseFloat(match[2]) || 0;
 
+        // Assign score to detected label and distribute remainder evenly
+        const remainder = Math.max(0, 100 - score);
         if (label === 'POSITIVE') {
           positive = score;
-          neutral = remainder;
-          negative = 0;
+          neutral = remainder / 2;
+          negative = remainder / 2;
         } else if (label === 'NEGATIVE') {
           negative = score;
-          neutral = remainder;
-          positive = 0;
+          neutral = remainder / 2;
+          positive = remainder / 2;
         } else {
-          neutral = 100;
-          positive = 0;
-          negative = 0;
+          neutral = score;
+          positive = remainder / 2;
+          negative = remainder / 2;
         }
       } else {
+        // If we couldn't parse sentiment, display raw text and default to neutral 100%
         const detailsDiv = document.getElementById('sentimentDetails');
         detailsDiv.innerHTML = `<p style="margin-top: 15px; color: white;"><strong>Result:</strong> ${sentimentText}</p>`;
       }
 
+      // Ensure numeric safety and total 100
+      positive = Math.max(0, Math.min(100, Number(positive)));
+      negative = Math.max(0, Math.min(100, Number(negative)));
+      neutral = Math.max(0, Math.min(100, Number(neutral)));
       const total = positive + negative + neutral;
-      if (total > 0) {
+      if (total === 0) {
+        neutral = 100.0;
+      } else if (Math.abs(total - 100) > 0.01) {
+        // Normalize to sum to 100
         positive = (positive / total) * 100;
         negative = (negative / total) * 100;
         neutral = (neutral / total) * 100;
       }
 
+      // Chart data in order: Neutral, Positive, Negative
       const labels = ['Neutral', 'Positive', 'Negative'];
       const data = [neutral.toFixed(2), positive.toFixed(2), negative.toFixed(2)];
       const colors = ['#ffc107', '#28a745', '#dc3545'];
 
       const ctx = chartContainer.getContext('2d');
+      // destroy existing chart instance if present
       if (window.sentimentChartInstance) {
-        window.sentimentChartInstance.destroy();
+        try { window.sentimentChartInstance.destroy(); } catch (e) {}
       }
 
       window.sentimentChartInstance = new Chart(ctx, {
@@ -480,6 +495,7 @@
         }
       });
 
+      // Display sentiment details with three values
       const detailsDiv = document.getElementById('sentimentDetails');
       detailsDiv.innerHTML = `
         <p style="margin-top: 15px;">Sentiment Breakdown:</p>
@@ -489,9 +505,12 @@
     }
 
     window.addEventListener('load', function() {
-      const sentimentText = '{{ sentiment|safe }}';
-      if (sentimentText) {
-        createSentimentChart(sentimentText);
+      const detailsDiv = document.getElementById('sentimentDetails');
+      if (detailsDiv && detailsDiv.innerHTML === '') {
+        const sentimentText = '{{ sentiment }}';
+        if (sentimentText) {
+          createSentimentChart(sentimentText);
+        }
       }
     });
   </script>
