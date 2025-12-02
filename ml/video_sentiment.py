@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import os
 from transformers import pipeline
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -66,10 +65,3 @@ def run_video_sentiment(video_url: str):
 
     except Exception as e:
         return f"An error occurred during video sentiment analysis: {str(e)}"
-=======
-"""
-Video sentiment module removed.
-This project now focuses exclusively on comments sentiment analysis.
-The old video analysis utilities were removed to simplify scope.
-"""
->>>>>>> parent of a21cfa8 (feat: Implement sentiment analysis with pie charts)

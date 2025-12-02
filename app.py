@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 
-=======
->>>>>>> parent of a21cfa8 (feat: Implement sentiment analysis with pie charts)
 from flask import Flask
 from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from models.user import db
