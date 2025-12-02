@@ -1,59 +1,67 @@
 import os
-from urllib.parse import urlparse, parse_qs
-from googleapiclient.discovery import build
-from ml.text_sentiment import run_text_sentiment
-from ml.video_sentiment import run_video_sentiment
+from transformers import pipeline
+from youtube_transcript_api import YouTubeTranscriptApi
+from ml.translate import translate_to_english
 
-YOUTUBE_API_KEY = "AIzaSyD4pMAKWDzb5qAu2L4anvwysavnTqJ7GRk"
+# Suppress TensorFlow logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-def extract_video_id(url):
-    parsed = urlparse(url)
-    if 'youtu.be' in parsed.netloc:
-        return parsed.path[1:]
-    query = parse_qs(parsed.query)
-    return query.get('v', [None])[0]
+_sentiment_pipeline = None
 
-def fetch_top_comments(video_id, max_comments=20):
+def _get_sentiment_pipeline():
+    """Lazy-loads the sentiment analysis pipeline."""
+    global _sentiment_pipeline
+    if _sentiment_pipeline is None:
+        _sentiment_pipeline = pipeline(
+            'sentiment-analysis',
+            model='distilbert-base-uncased-finetuned-sst-2-english'
+        )
+    return _sentiment_pipeline
+
+
+def _extract_video_id(video_url: str) -> str:
+    """Extracts the YouTube video ID from a URL."""
+    if "v=" in video_url:
+        return video_url.split("v=")[-1].split("&")[0]
+    elif "youtu.be/" in video_url:
+        return video_url.split("youtu.be/")[-1].split("?")[0]
+    else:
+        raise ValueError("Invalid YouTube URL format")
+
+def run_video_sentiment(video_url: str):
+    """
+    Analyzes the sentiment of a YouTube video's transcript.
+    Steps:
+    1. Extract video ID
+    2. Fetch transcript
+    3. Translate to English
+    4. Run sentiment analysis
+    """
     try:
-        youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-        response = youtube.commentThreads().list(
-            part='snippet',
-            videoId=video_id,
-            maxResults=max_comments,
-            textFormat='plainText'
-        ).execute()
+        video_id = _extract_video_id(video_url)
 
-        comments = [
-            item['snippet']['topLevelComment']['snippet']['textDisplay']
-            for item in response.get('items', [])
-        ]
-        return ' '.join(comments)
-    except Exception:
-        return None
+        transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+        text = " ".join([t['text'] for t in transcript])
+        print("Transcript length:", len(text))
+        if not text.strip():
+            return "No transcript available for this video"
 
-def analyze_youtube_comments(url):
-    """Analyze YouTube comments"""
-    try:
-        video_id = extract_video_id(url)
-        if not video_id:
-            return "Invalid YouTube link"
+        translated = translate_to_english(text)
+        if isinstance(translated, str) and translated.startswith("Translation error"):
+            return "Could not process video text due to translation failure"
 
-        comments = fetch_top_comments(video_id)
-        
-        if not comments:
-            return "Unable to fetch comments"
+        if not translated or not str(translated).strip():
+            return "No text to analyze after translation"
 
-        return run_text_sentiment(comments)
+        sentiment_pipeline = _get_sentiment_pipeline()
+        result = sentiment_pipeline(str(translated))
+
+        if result:
+            label = result[0]['label']
+            score = result[0]['score'] * 100
+            return f"{label.upper()} ({score:.2f}%)"
+
+        return "Sentiment not determined"
+
     except Exception as e:
-        return f"Error analyzing YouTube comments: {str(e)}"
-
-def analyze_youtube_video(url):
-    """Analyze YouTube video"""
-    try:
-        video_id = extract_video_id(url)
-        if not video_id:
-            return "Invalid YouTube link"
-
-        return run_video_sentiment(video_id)
-    except Exception as e:
-        return f"Error analyzing YouTube video: {str(e)}"
+        return f"An error occurred during video sentiment analysis: {str(e)}"
