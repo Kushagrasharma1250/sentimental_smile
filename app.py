@@ -1,12 +1,8 @@
-try:
-    from flask import Flask
-    from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
-    from models.user import db
-    from routes.auth import auth_bp
-    from routes.analyze import analyze_bp
-except ModuleNotFoundError:
-    print("It seems like you have not installed the required packages. Please install them by running 'pip install -r requirements.txt'")
-    exit()
+from flask import Flask
+from config import SECRET_KEY, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
+from models.user import db
+from routes.auth import auth_bp
+from routes.analyze import analyze_bp
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY

@@ -2,14 +2,13 @@ import os
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
 from ml.text_sentiment import run_text_sentiment
-from ml.video_sentiment import run_video_sentiment
 
 YOUTUBE_API_KEY = "AIzaSyD4pMAKWDzb5qAu2L4anvwysavnTqJ7GRk"
 
 def extract_video_id(url):
     parsed = urlparse(url)
     if 'youtu.be' in parsed.netloc:
-        return parsed.path[1:]
+        return parsed.path[1:]  
     query = parse_qs(parsed.query)
     return query.get('v', [None])[0]
 
@@ -43,17 +42,7 @@ def analyze_youtube_comments(url):
         if not comments:
             return "Unable to fetch comments"
 
-        return run_text_sentiment(comments)
+        sentiment_result = run_text_sentiment(comments)
+        return f"YouTube Comments: {sentiment_result}"
     except Exception as e:
         return f"Error analyzing YouTube comments: {str(e)}"
-
-def analyze_youtube_video(url):
-    """Analyze YouTube video"""
-    try:
-        video_id = extract_video_id(url)
-        if not video_id:
-            return "Invalid YouTube link"
-
-        return run_video_sentiment(video_id)
-    except Exception as e:
-        return f"Error analyzing YouTube video: {str(e)}"

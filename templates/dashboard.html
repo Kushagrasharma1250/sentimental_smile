@@ -328,7 +328,7 @@
     </li>
   </ul>
 
-  <!-- YouTube Analysis -->
+  <!-- YouTube Comments Analysis -->
   <div id="youtube" class="tab-content active">
     <h4>YouTube Comments Sentiment</h4>
     <form method="POST" action="/analyze/youtube" id="youtubeForm">
@@ -338,18 +338,6 @@
       </div>
       
       <button type="submit" class="btn btn-primary">Analyze Comments</button>
-    </form>
-
-    <hr class="my-4">
-
-    <h4>YouTube Video Sentiment</h4>
-    <form method="POST" action="/analyze/youtube/video" id="youtubeVideoForm">
-      <div class="mb-3">
-        <label class="form-label">YouTube Video URL:</label>
-        <input type="text" name="link" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
-      </div>
-      
-      <button type="submit" class="btn btn-primary">Analyze Video</button>
     </form>
   </div>
 
