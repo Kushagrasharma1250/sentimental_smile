@@ -1,12 +1,27 @@
 import os
+<<<<<<< HEAD
 from transformers import pipeline
 from youtube_transcript_api import YouTubeTranscriptApi
 from ml.translate import translate_to_english
+=======
+from urllib.parse import urlparse, parse_qs
+from googleapiclient.discovery import build
+from ml.text_sentiment import run_text_sentiment
+>>>>>>> parent of a21cfa8 (feat: Implement sentiment analysis with pie charts)
 
 # Suppress TensorFlow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+<<<<<<< HEAD
 _sentiment_pipeline = None
+=======
+def extract_video_id(url):
+    parsed = urlparse(url)
+    if 'youtu.be' in parsed.netloc:
+        return parsed.path[1:]  
+    query = parse_qs(parsed.query)
+    return query.get('v', [None])[0]
+>>>>>>> parent of a21cfa8 (feat: Implement sentiment analysis with pie charts)
 
 def _get_sentiment_pipeline():
     """Lazy-loads the sentiment analysis pipeline."""
@@ -63,5 +78,12 @@ def run_video_sentiment(video_url: str):
 
         return "Sentiment not determined"
 
+<<<<<<< HEAD
     except Exception as e:
         return f"An error occurred during video sentiment analysis: {str(e)}"
+=======
+        sentiment_result = run_text_sentiment(comments)
+        return f"YouTube Comments: {sentiment_result}"
+    except Exception as e:
+        return f"Error analyzing YouTube comments: {str(e)}"
+>>>>>>> parent of a21cfa8 (feat: Implement sentiment analysis with pie charts)
