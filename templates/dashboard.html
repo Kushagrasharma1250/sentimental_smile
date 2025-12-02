@@ -4,10 +4,316 @@
   <title>Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 0, 128, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+    }
+    
+    h2 {
+      font-weight: 900;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient 3s linear infinite;
+      text-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+    }
+    
+    @keyframes gradient {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+    
+    .text-muted {
+      color: #00ffff !important;
+      text-align: center;
+      font-size: 1.1rem;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    
+    .nav-tabs {
+      border-bottom: 2px solid rgba(255, 0, 255, 0.3);
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    
+    .nav-tabs .nav-link {
+      background: rgba(20, 20, 40, 0.6);
+      border: 2px solid rgba(255, 0, 255, 0.3);
+      color: #ff00ff;
+      margin: 0 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .nav-tabs .nav-link:hover {
+      background: rgba(255, 0, 255, 0.2);
+      border-color: #ff00ff;
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .nav-tabs .nav-link.active {
+      background: linear-gradient(135deg, #ff00ff, #ff0080);
+      border-color: #ff00ff;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(255, 0, 255, 0.4);
+      border-bottom: 3px solid #00ffff;
+    }
+    
+    .tab-content {
+      display: none;
+      background: rgba(20, 20, 40, 0.7);
+      padding: 30px;
+      border-radius: 20px;
+      border: 2px solid rgba(255, 0, 255, 0.3);
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    h4 {
+      color: #00ffff;
+      font-weight: 700;
+      margin-bottom: 25px;
+      text-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+    
+    .form-label {
+      color: #ff00ff;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+      margin-bottom: 10px;
+    }
+    
+    .form-control, .form-select {
+      background: rgba(10, 10, 30, 0.8);
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      background: rgba(10, 10, 30, 0.9);
+      border-color: #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      color: #fff;
+      outline: none;
+    }
+    
+    .form-control::placeholder {
+      color: rgba(0, 255, 255, 0.5);
+    }
+    
+    .btn {
+      font-weight: 700;
+      padding: 12px 30px;
+      border-radius: 25px;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #ff0080, #ff00ff);
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .btn-info {
+      background: linear-gradient(135deg, #00ffff, #0080ff);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+    
+    .btn-info:hover {
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ff0080, #ff0040);
+      box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+    }
+    
+    .btn-danger:hover {
+      box-shadow: 0 0 40px rgba(255, 0, 128, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #666, #999);
+      box-shadow: 0 0 20px rgba(153, 153, 153, 0.5);
+    }
+    
+    .btn-secondary:hover {
+      box-shadow: 0 0 40px rgba(153, 153, 153, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .chart-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: auto;
+      margin-top: 20px;
+    }
+    
+    .sentiment-result {
+      margin-top: 30px;
+      animation: slideUp 0.5s ease;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .result-card {
+      background: linear-gradient(135deg, rgba(255, 0, 255, 0.3), rgba(0, 255, 255, 0.3));
+      border: 2px solid rgba(255, 0, 255, 0.5);
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin-top: 20px;
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.4), 0 0 80px rgba(0, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+    
+    .result-card h5 {
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      text-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+    }
+    
+    .sentiment-badge {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      margin: 5px;
+      box-shadow: 0 0 20px currentColor;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .positive {
+      background: linear-gradient(135deg, #00ff00, #00cc00);
+      color: #000;
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    }
+    
+    .negative {
+      background: linear-gradient(135deg, #ff0040, #ff0080);
+      color: white;
+      box-shadow: 0 0 30px rgba(255, 0, 64, 0.6);
+    }
+    
+    .neutral {
+      background: linear-gradient(135deg, #ffff00, #ffcc00);
+      color: black;
+      box-shadow: 0 0 30px rgba(255, 255, 0, 0.6);
+    }
+    
+    .form-text {
+      color: rgba(0, 255, 255, 0.7) !important;
+      text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+    }
+    
+    hr {
+      border-color: rgba(255, 0, 255, 0.3);
+      margin: 40px 0;
+    }
+    
+    select.form-control {
+      background: rgba(10, 10, 30, 0.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E") no-repeat right 12px center;
+      appearance: none;
+    }
+  </style>
 </head>
 <body class="container mt-5">
   <h2>Sentiment Analysis Dashboard</h2>
-  <p class="text-muted">Analyze sentiment from different social media platforms and videos</p>
+  <p class="text-muted">Analyze sentiment from different social media platforms</p>
 
   <!-- Platform Tabs -->
   <ul class="nav nav-tabs mb-4" id="platformTabs">
@@ -20,9 +326,6 @@
     <li class="nav-item">
       <button class="nav-link" id="instagram-tab" onclick="switchTab('instagram')">Instagram</button>
     </li>
-    <li class="nav-item">
-      <button class="nav-link" id="video-tab" onclick="switchTab('video')">Video</button>
-    </li>
   </ul>
 
   <!-- YouTube Comments Analysis -->
@@ -33,6 +336,7 @@
         <label class="form-label">YouTube URL:</label>
         <input type="text" name="link" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
       </div>
+      
       <button type="submit" class="btn btn-primary">Analyze Comments</button>
     </form>
   </div>
@@ -45,6 +349,7 @@
         <label class="form-label">Tweet URL:</label>
         <input type="text" name="link" class="form-control" placeholder="https://twitter.com/..." required>
       </div>
+      
       <button type="submit" class="btn btn-info">Analyze Tweet</button>
     </form>
   </div>
@@ -57,39 +362,20 @@
         <label class="form-label">Instagram Post URL:</label>
         <input type="text" name="link" class="form-control" placeholder="https://www.instagram.com/p/..." required>
       </div>
+      
       <button type="submit" class="btn btn-danger">Analyze Comments</button>
     </form>
   </div>
 
-  <!-- Video Sentiment Analysis -->
-  <div id="video" class="tab-content">
-    <h4>Video Sentiment Analysis</h4>
-    <form method="POST" action="/analyze/video" enctype="multipart/form-data" id="videoForm">
-      <div class="mb-3">
-        <label class="form-label">Upload Video File:</label>
-        <input type="file" name="video" class="form-control" accept="video/*" required>
-      </div>
-      <button type="submit" class="btn btn-warning">Analyze Video</button>
-    </form>
-  </div>
-
-  <!-- Sentiment Result -->
-  {% if result %}
-    <div class="sentiment-result mt-4">
+  <!-- Sentiment Result with Pie Chart -->
+  {% if sentiment %}
+    <div class="sentiment-result">
       <div class="result-card">
-        <h5>📊 {{ result.platform }} Sentiment Analysis Result</h5>
+        <h5>📊 Sentiment Analysis Result</h5>
         <div class="chart-container">
           <canvas id="sentimentChart"></canvas>
         </div>
         <div id="sentimentDetails"></div>
-
-        <!-- Show text + visual sentiment for video -->
-        {% if result.platform == 'Video' %}
-          <div class="mt-3">
-            <p><strong>Text Sentiment:</strong> {{ result.text_sentiment }}</p>
-            <p><strong>Visual Sentiment:</strong> {{ result.visual_sentiment }}</p>
-          </div>
-        {% endif %}
       </div>
     </div>
   {% endif %}
@@ -109,75 +395,112 @@
       document.getElementById(tabName + '-tab').classList.add('active');
     }
 
-    // Create chart for sentiment breakdown
-    function createSentimentChart(result) {
+    // Parse sentiment data and create pie chart with three slices: Neutral, Positive, Negative
+    function createSentimentChart(sentimentText) {
       const chartContainer = document.getElementById('sentimentChart');
       if (!chartContainer) return;
 
-      let labels = [];
-      let data = [];
-      let colors = [];
+      // Default values: all neutral
+      let positive = 0.0;
+      let negative = 0.0;
+      let neutral = 100.0;
 
-      if (result.platform === 'Video') {
-        // Compare text vs visual sentiment
-        labels = ['Text Sentiment', 'Visual Sentiment'];
-        data = [1, 1]; // dummy values
-        colors = ['#007bff', '#ffc107'];
-      } else {
-        // Parse single sentiment string like "POSITIVE (85.50%)"
-        const sentimentText = result.sentiment;
-        let positive = 0.0, negative = 0.0, neutral = 100.0;
+      // Try to extract label and score from text like "POSITIVE (85.50%)"
+      const match = sentimentText.match(/(\b[A-Z]+\b)\s*\((\d+\.?\d*)\%?\)/i);
+      if (match) {
+        const label = match[1].toUpperCase();
+        const score = parseFloat(match[2]) || 0;
 
-        const match = sentimentText.match(/(\b[A-Z]+\b)\s*\((\d+\.?\d*)\%?\)/i);
-        if (match) {
-          const label = match[1].toUpperCase();
-          const score = parseFloat(match[2]) || 0;
-          const remainder = Math.max(0, 100 - score);
-
-          if (label === 'POSITIVE') {
-            positive = score; neutral = remainder / 2; negative = remainder / 2;
-          } else if (label === 'NEGATIVE') {
-            negative = score; neutral = remainder / 2; positive = remainder / 2;
-          } else {
-            neutral = score; positive = remainder / 2; negative = remainder / 2;
-          }
+        // Assign score to detected label and distribute remainder evenly
+        const remainder = Math.max(0, 100 - score);
+        if (label === 'POSITIVE') {
+          positive = score;
+          neutral = remainder / 2;
+          negative = remainder / 2;
+        } else if (label === 'NEGATIVE') {
+          negative = score;
+          neutral = remainder / 2;
+          positive = remainder / 2;
+        } else {
+          neutral = score;
+          positive = remainder / 2;
+          negative = remainder / 2;
         }
-
-        labels = ['Neutral', 'Positive', 'Negative'];
-        data = [neutral.toFixed(2), positive.toFixed(2), negative.toFixed(2)];
-        colors = ['#ffc107', '#28a745', '#dc3545'];
+      } else {
+        // If we couldn't parse sentiment, display raw text and default to neutral 100%
+        const detailsDiv = document.getElementById('sentimentDetails');
+        detailsDiv.innerHTML = `<p style="margin-top: 15px; color: white;"><strong>Result:</strong> ${sentimentText}</p>`;
       }
 
+      // Ensure numeric safety and total 100
+      positive = Math.max(0, Math.min(100, Number(positive)));
+      negative = Math.max(0, Math.min(100, Number(negative)));
+      neutral = Math.max(0, Math.min(100, Number(neutral)));
+      const total = positive + negative + neutral;
+      if (total === 0) {
+        neutral = 100.0;
+      } else if (Math.abs(total - 100) > 0.01) {
+        // Normalize to sum to 100
+        positive = (positive / total) * 100;
+        negative = (negative / total) * 100;
+        neutral = (neutral / total) * 100;
+      }
+
+      // Chart data in order: Neutral, Positive, Negative
+      const labels = ['Neutral', 'Positive', 'Negative'];
+      const data = [neutral.toFixed(2), positive.toFixed(2), negative.toFixed(2)];
+      const colors = ['#ffc107', '#28a745', '#dc3545'];
+
       const ctx = chartContainer.getContext('2d');
+      // destroy existing chart instance if present
       if (window.sentimentChartInstance) {
         try { window.sentimentChartInstance.destroy(); } catch (e) {}
       }
 
       window.sentimentChartInstance = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderColor: ['rgba(255,255,255,0.6)','white','white'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: 'white',
+                font: { size: 14, family: "'Orbitron', sans-serif" }
+              }
+            }
+          }
+        }
       });
 
+      // Display sentiment details with three values
       const detailsDiv = document.getElementById('sentimentDetails');
-      if (result.platform === 'Video') {
-        detailsDiv.innerHTML = `
-          <p style="margin-top: 15px;">Video Sentiment Comparison:</p>
-          <p>Text Sentiment: ${result.text_sentiment} | Visual Sentiment: ${result.visual_sentiment}</p>`;
-      } else {
-        detailsDiv.innerHTML = `
-          <p style="margin-top: 15px;">Sentiment Breakdown:</p>
-          <p>Neutral: ${data[0]}% | Positive: ${data[1]}% | Negative: ${data[2]}%</p>`;
-      }
+      detailsDiv.innerHTML = `
+        <p style="margin-top: 15px;">Sentiment Breakdown:</p>
+        <p style="margin:0.25rem 0;"><span class="sentiment-badge neutral">Neutral: ${neutral.toFixed(2)}%</span>
+        <span class="sentiment-badge positive">Positive: ${positive.toFixed(2)}%</span>
+        <span class="sentiment-badge negative">Negative: ${negative.toFixed(2)}%</span></p>`;
     }
 
-   window.addEventListener('load', function() {
-    const rawResult = '{{ result|tojson|safe if result else "" }}';
-    const result = rawResult ? JSON.parse(rawResult) : null;
-    if (result) {
-      createSentimentChart(result);
-    }
-  });
+    window.addEventListener('load', function() {
+      const detailsDiv = document.getElementById('sentimentDetails');
+      if (detailsDiv && detailsDiv.innerHTML === '') {
+        const sentimentText = '{{ sentiment }}';
+        if (sentimentText) {
+          createSentimentChart(sentimentText);
+        }
+      }
+    });
   </script>
 </body>
 </html>
