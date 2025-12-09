@@ -38,6 +38,8 @@ def analyze_instagram_comments(url):
             return "Unable to fetch post comments"
 
         sentiment = run_text_sentiment(comments)
-        return f"Instagram Comments: {sentiment}"
+        if isinstance(sentiment, dict):
+            return sentiment
+        return {"summary": f"Instagram Comments: {sentiment}"}
     except Exception as e:
         return f"Error analyzing comments: {str(e)}"

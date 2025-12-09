@@ -43,6 +43,10 @@ def analyze_youtube_comments(url):
             return "Unable to fetch comments"
 
         sentiment_result = run_text_sentiment(comments)
-        return f"YouTube Comments: {sentiment_result}"
+        # If sentiment_result is already structured, return it directly
+        if isinstance(sentiment_result, dict):
+            return sentiment_result
+        # Otherwise wrap into a summary dict for compatibility
+        return {"summary": f"YouTube Comments: {sentiment_result}"}
     except Exception as e:
         return f"Error analyzing YouTube comments: {str(e)}"

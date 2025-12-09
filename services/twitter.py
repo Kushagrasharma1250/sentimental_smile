@@ -47,7 +47,9 @@ def analyze_twitter(url):
             return f"Tweet: [TEST] {sentiment}"
 
         sentiment = run_text_sentiment(text)
-        return f"Tweet: {sentiment}"
+        if isinstance(sentiment, dict):
+            return sentiment
+        return {"summary": f"Tweet: {sentiment}"}
     except Exception as e:
         import traceback
         return f"Error analyzing tweet: {str(e)}"
