@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, session, redirect
-from services.youtube import analyze_youtube_comments
+from services.youtube import analyze_youtube_comments, analyze_youtube_multimodal_full
 from services.twitter import analyze_twitter
 from services.instagram import analyze_instagram_comments
 
@@ -20,6 +20,17 @@ def analyze_youtube_route():
     sentiment = analyze_youtube_comments(link)
 
     return render_template('dashboard.html', sentiment=sentiment, platform='youtube')
+
+@analyze_bp.route('/analyze/youtube/multimodal', methods=['POST'])
+def analyze_youtube_multimodal_route():
+    """Multimodal analysis: video frames + audio + comments"""
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    link = request.form['link']
+    sentiment = analyze_youtube_multimodal_full(link)
+
+    return render_template('dashboard.html', sentiment=sentiment, platform='youtube_multimodal')
 
 @analyze_bp.route('/analyze/twitter', methods=['POST'])
 def analyze_twitter_route():

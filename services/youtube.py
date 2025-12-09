@@ -2,6 +2,7 @@ import os
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
 from ml.text_sentiment import run_text_sentiment
+from ml.multimodal_sentiment import analyze_youtube_multimodal
 
 YOUTUBE_API_KEY = "AIzaSyD4pMAKWDzb5qAu2L4anvwysavnTqJ7GRk"
 
@@ -31,7 +32,7 @@ def fetch_top_comments(video_id, max_comments=20):
         return None
 
 def analyze_youtube_comments(url):
-    """Analyze YouTube comments"""
+    """Analyze YouTube comments only"""
     try:
         video_id = extract_video_id(url)
         if not video_id:
@@ -48,5 +49,23 @@ def analyze_youtube_comments(url):
             return sentiment_result
         # Otherwise wrap into a summary dict for compatibility
         return {"summary": f"YouTube Comments: {sentiment_result}"}
+    except Exception as e:
+        return f"Error analyzing YouTube comments: {str(e)}"
+
+def analyze_youtube_multimodal_full(url):
+    """
+    Analyze YouTube video using multimodal approach.
+    Combines video frames and audio transcription sentiment.
+    No full video download required.
+    """
+    try:
+        result = analyze_youtube_multimodal(url)
+        return result
+    except Exception as e:
+        import traceback
+        return {
+            "error": str(e),
+            "summary": f"Multimodal analysis failed: {str(e)}"
+        }
     except Exception as e:
         return f"Error analyzing YouTube comments: {str(e)}"

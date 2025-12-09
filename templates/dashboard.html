@@ -294,7 +294,22 @@
       color: black;
       box-shadow: 0 0 30px rgba(255, 255, 0, 0.6);
     }
-    
+
+    .component-box {
+      background: rgba(50, 50, 80, 0.6);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      font-size: 0.9rem;
+    }
+
+    .component-label {
+      color: #00ffff;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
     .form-text {
       color: rgba(0, 255, 255, 0.7) !important;
       text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
@@ -321,6 +336,9 @@
       <button class="nav-link active" id="youtube-tab" onclick="switchTab('youtube')">YouTube</button>
     </li>
     <li class="nav-item">
+      <button class="nav-link" id="youtube-mm-tab" onclick="switchTab('youtube-multimodal')">YouTube (Multimodal)</button>
+    </li>
+    <li class="nav-item">
       <button class="nav-link" id="twitter-tab" onclick="switchTab('twitter')">Twitter</button>
     </li>
     <li class="nav-item">
@@ -338,6 +356,20 @@
       </div>
       
       <button type="submit" class="btn btn-primary">Analyze Comments</button>
+    </form>
+  </div>
+
+  <!-- YouTube Multimodal Analysis -->
+  <div id="youtube-multimodal" class="tab-content">
+    <h4>YouTube Multimodal Analysis (Video + Audio + Comments)</h4>
+    <p style="font-size: 0.9rem; color: #00ffff;">Analyzes video frames, transcribed audio, and comments without downloading the full video.</p>
+    <form method="POST" action="/analyze/youtube/multimodal" id="youtubeMMForm">
+      <div class="mb-3">
+        <label class="form-label">YouTube URL:</label>
+        <input type="text" name="link" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Analyze (Multimodal)</button>
     </form>
   </div>
 
@@ -384,6 +416,29 @@
         </div>
       </div>
       <p style="text-align:center;margin-top:1rem;">Top: <strong>{{ sentiment.label }}</strong> — Confidence: <strong>{{ sentiment.confidence }}%</strong></p>
+      
+      <!-- Component breakdown for multimodal -->
+      {% if sentiment.components is defined %}
+      <div style="margin-top: 2rem; border-top: 1px solid rgba(255,0,255,0.3); padding-top: 1rem;">
+        <h6 style="color: #00ffff; margin-bottom: 1rem;">Component Analysis</h6>
+        {% for component, data in sentiment.components.items() %}
+        {% if data and not data.error %}
+        <div class="component-box">
+          <div class="component-label">{{ component | upper }}</div>
+          <div style="font-size: 0.85rem;">
+            {% if data.positive is defined %}
+            Positive: {{ "%.1f" | format(data.positive) }}% | 
+            Negative: {{ "%.1f" | format(data.negative) }}% | 
+            Neutral: {{ "%.1f" | format(data.neutral) }}%
+            {% else %}
+            {{ data.summary if data.summary else "No data" }}
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
       {% else %}
       <p>{{ sentiment.summary }}</p>
       {% endif %}
