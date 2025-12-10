@@ -7,25 +7,21 @@ from routes.analyze import analyze_bp
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
-# Database config
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
 db.init_app(app)
 
-# Register blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(analyze_bp)
 
-# Create tables
 with app.app_context():
     db.create_all()
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
     data = request.get_json()
-    # Perform sentiment analysis (dummy implementation)
     sentiment = "positive" if data['text'].count('good') > data['text'].count('bad') else "negative"
     return jsonify({"sentiment": sentiment})
-
+# © Kushagra Sharma 
 if __name__ == '__main__':
     app.run(debug=True)
