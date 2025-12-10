@@ -61,7 +61,7 @@ def extract_video_frames(youtube_url, max_frames=5, frame_interval=10):
     """
     try:
         ydl_opts = {
-            'format': 'best[height<=360]/worst',  # Low resolution to save bandwidth
+            'format': 'best[height<=360]/worst',
             'quiet': True,
             'no_warnings': True,
             'socket_timeout': 30,
@@ -71,7 +71,6 @@ def extract_video_frames(youtube_url, max_frames=5, frame_interval=10):
             info = ydl.extract_info(youtube_url, download=False)
             video_url = info['url']
         
-        # Use ffmpeg to extract frames at intervals
         frames = []
         with tempfile.TemporaryDirectory() as tmpdir:
             frame_pattern = os.path.join(tmpdir, 'frame_%d.jpg')
@@ -87,7 +86,6 @@ def extract_video_frames(youtube_url, max_frames=5, frame_interval=10):
             
             subprocess.run(cmd, check=False, capture_output=True)
             
-            # Load extracted frames
             for i in range(1, max_frames + 1):
                 frame_file = os.path.join(tmpdir, f'frame_{i}.jpg')
                 if os.path.exists(frame_file):
@@ -126,18 +124,15 @@ def extract_audio_transcript(youtube_url):
             audio_file = ydl.prepare_filename(info).replace('.webm', '.wav').replace('.mp4', '.wav')
         
         if not os.path.exists(audio_file):
-            # Fallback: try common output format
             base_path = os.path.join(tempfile.gettempdir(), f"audio_{info['id']}.wav")
             if os.path.exists(base_path):
                 audio_file = base_path
             else:
                 return None
         
-        # Transcribe audio
         transcriber = _get_transcription_pipeline()
         result = transcriber(audio_file)
         
-        # Clean up
         try:
             os.remove(audio_file)
         except:
@@ -163,7 +158,6 @@ def analyze_visual_sentiment(frames):
     try:
         model, processor = _get_clip_model()
         
-        # Sentiment-related prompts for visual analysis
         prompts = [
             "a happy and positive scene",
             "a sad and negative scene",
@@ -184,19 +178,15 @@ def analyze_visual_sentiment(frames):
                 image_features = model.get_image_features(**image_inputs)
                 text_features = model.get_text_features(**text_inputs)
                 
-                # Normalize features
                 image_features /= image_features.norm(dim=-1, keepdim=True)
                 text_features /= text_features.norm(dim=-1, keepdim=True)
                 
-                # Compute similarity scores
                 similarities = (image_features @ text_features.T).squeeze()
         
-        # Map prompt similarities to sentiment categories
-        visual_scores["positive"] = float((similarities[0] + similarities[3]).mean() * 50)  # happy + bright
-        visual_scores["negative"] = float((similarities[1] + similarities[4]).mean() * 50)  # sad + dark
-        visual_scores["neutral"] = float(similarities[2].mean() * 50)  # neutral
+        visual_scores["positive"] = float((similarities[0] + similarities[3]).mean() * 50)
+        visual_scores["negative"] = float((similarities[1] + similarities[4]).mean() * 50)
+        visual_scores["neutral"] = float(similarities[2].mean() * 50)
         
-        # Normalize to 0-100
         total = visual_scores["positive"] + visual_scores["negative"] + visual_scores["neutral"]
         if total > 0:
             for key in visual_scores:
@@ -224,7 +214,6 @@ def analyze_youtube_multimodal(youtube_url):
             "error": None
         }
         
-        # 1. Extract and analyze video frames
         try:
             frames = extract_video_frames(youtube_url, max_frames=5, frame_interval=15)
             if frames:
@@ -233,7 +222,6 @@ def analyze_youtube_multimodal(youtube_url):
         except Exception as e:
             results["components"]["visual"] = {"error": str(e)}
         
-        # 2. Extract and transcribe audio
         try:
             transcript = extract_audio_transcript(youtube_url)
             if transcript:
@@ -245,7 +233,6 @@ def analyze_youtube_multimodal(youtube_url):
         except Exception as e:
             results["components"]["audio_text"] = {"error": str(e)}
         
-        # 3. Combine all sentiments
         combined = {"positive": 0.0, "negative": 0.0, "neutral": 0.0}
         component_count = 0
         
@@ -256,12 +243,10 @@ def analyze_youtube_multimodal(youtube_url):
                         combined[key] += component_result[key]
                 component_count += 1
         
-        # Average across components
         if component_count > 0:
             for key in combined:
                 combined[key] /= component_count
         
-        # Determine top label
         top_label = max(combined.keys(), key=lambda k: combined.get(k, 0.0))
         top_confidence = min(100, combined.get(top_label, 0.0))
         
