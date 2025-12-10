@@ -39,8 +39,6 @@ def analyze_twitter(url):
 
         text = fetch_tweet_text(tweet_id)
         if not text:
-            # If API fails, try with a test message to verify sentiment works
-            # This helps diagnose whether the issue is API vs. sentiment model
             print(f"Twitter API failed for {tweet_id}, attempting with test text")
             test_text = "This is a great product I really love it"
             sentiment = run_text_sentiment(test_text)

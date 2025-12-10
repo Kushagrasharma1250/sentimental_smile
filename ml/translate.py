@@ -1,7 +1,6 @@
 from transformers import pipeline
 from langdetect import detect
 
-# Lazy-load translator to avoid startup delays and errors
 translator = None
 
 def _get_translator():
@@ -22,5 +21,4 @@ def translate_to_english(text):
             return translated
         return text
     except Exception as e:
-        # Raise exception instead of returning error string
         raise Exception(f"Translation failed: {str(e)}")

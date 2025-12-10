@@ -3,14 +3,12 @@ from PIL import Image
 import requests
 from io import BytesIO
 
-# Load image-to-text model (BLIP) to describe images
 try:
     image_to_text_pipeline = pipeline("image-to-text", model="Salesforce/blip-image-captioning-base")
 except Exception as e:
     print(f"Error loading image-to-text model: {e}")
     image_to_text_pipeline = None
 
-# Load RoBERTa sentiment analysis model
 try:
     sentiment_pipeline = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
 except Exception as e:
@@ -40,7 +38,6 @@ def generate_image_caption(image):
         if image_to_text_pipeline is None:
             return None
         
-        # Convert RGBA to RGB if necessary
         if image.mode == 'RGBA':
             image = image.convert('RGB')
         
@@ -58,7 +55,6 @@ def run_image_sentiment(image_source):
     image_source can be: URL string, file path string, or PIL Image object
     """
     try:
-        # Load image based on source type
         if isinstance(image_source, str):
             if image_source.startswith('http'):
                 image = load_image_from_url(image_source)
@@ -70,18 +66,15 @@ def run_image_sentiment(image_source):
         if image is None:
             return "Unable to load image"
         
-        # Generate caption for the image
         caption = generate_image_caption(image)
         if not caption:
             return "Unable to generate image description"
         
-        # Analyze sentiment of the caption
         if sentiment_pipeline is None:
             return "Sentiment analysis model not loaded"
         
         result = sentiment_pipeline(caption)[0]
         label = result['label'].upper()
-        # Normalize score to percent and cap at 100 to avoid anomalous values
         raw = result.get('score', 0)
         score = _to_percent(raw)
 
