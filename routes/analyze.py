@@ -23,7 +23,7 @@ def analyze_youtube_route():
 
 @analyze_bp.route('/analyze/youtube/multimodal', methods=['POST'])
 def analyze_youtube_multimodal_route():
-    """Multimodal analysis: video frames + audio + comments"""
+    """Multimodal analysis: video frames + audio"""
     if 'user_id' not in session:
         return redirect('/login')
 
@@ -60,12 +60,5 @@ def analyze():
 
     link = request.form['link']
     sentiment = "Unsupported link"
-
-    if 'youtube.com' in link or 'youtu.be' in link:
-        sentiment = analyze_youtube_comments(link)
-    elif 'twitter.com' in link:
-        sentiment = analyze_twitter(link)
-    elif 'instagram.com' in link:
-        sentiment = analyze_instagram_comments(link)
 
     return render_template('dashboard.html', sentiment=sentiment)

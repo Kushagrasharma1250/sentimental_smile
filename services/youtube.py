@@ -13,7 +13,7 @@ def extract_video_id(url):
     query = parse_qs(parsed.query)
     return query.get('v', [None])[0]
 
-def fetch_top_comments(video_id, max_comments=100):
+def fetch_top_comments(video_id, max_comments=20):
     try:
         youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
         response = youtube.commentThreads().list(
